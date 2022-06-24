@@ -34,19 +34,18 @@ def get_random_positions():
 def get_random_velocities():
     return np.random.uniform(-1,1), np.random.uniform(-1,1), np.random.uniform(-1,1), np.random.uniform(-1,1), np.random.uniform(-1,1), np.random.uniform(-1,1)
 
+def get_kinetic_energy(mass, v1, v2):
+    velocity = np.sqrt(v1*v1 + v2*v2)
+    return mass*velocity*velocity/2
 
-def get_momentum(mass, velocity):
-    return mass*velocity[0], mass*velocity[1]
+def get_potential_energy(x1, y1, m1, x2, y2, m2, G):
+    distance = np.sqrt((y2-y1)*(y2-y1) + (x2-x1)*(x2-x1))
+    return G*m1*m2/distance
 
-def get_square_momentum(mass, velocity):
-    x,y = get_momentum(mass, velocity)
-    return x*x + y*y
-
-def get_distance(body1, body2):
-    return np.sqrt( np.power((body1[0] - body2[0]),2) + np.power((body1[1] - body2[1]),2) )
-
-def get_energy(x1, y1, vx1, vy1, x2, y2, vx2, vy2, x3, y3, vx3, vy3):
-    return - (G*M[0]*M[1] / get_distance([x1,y1], [x2,y2])) - (G*M[1]*M[2] / get_distance([x2,y2], [x3,y3])) - (G*M[2]*M[0] / get_distance([x1,y1], [x3,y3])) + get_square_momentum(M[0], [vx1,vy1]) / (2*M[0]) + get_square_momentum(M[1], [vx2,vy2]) / (2*M[1]) + get_square_momentum(M[2], [vx3,vy3]) / (2*M[2])
+def get_energy(x1, y1, vx1, vy1, x2, y2, vx2, vy2, x3, y3, vx3, vy3, M, G):
+    total_kinetic =  get_kinetic_energy(M[0],vx1,vy1) + get_kinetic_energy(M[1],vx2,vy2) + get_kinetic_energy(M[2],vx3,vy3)
+    total_potential = get_potential_energy(x1,y1,M[0],x2,y2,M[1],G) + get_potential_energy(x1,y1,M[0],x3,y3,M[2],G) + get_potential_energy(x2,y2,M[1],x3,y3,M[2],G)
+    return total_kinetic - total_potential
 
 if __name__ == '__main__':
     x1, y1, x2, y2, x3, y3 = get_random_positions()
@@ -62,7 +61,8 @@ if __name__ == '__main__':
     print("Body 1: " + str(vx2) + ", " + str(vy2))
     print("Body 1: " + str(vx3) + ", " + str(vy2) + "\n")
 
-    print("Total energy of the system: " + str(get_energy(x1, y1, vx1, vy1, x2, y2, vx2, vy2, x3, y3, vx3, vy3)))
+    print("Total energy of the system: " + str(get_energy(x1, y1, vx1, vy1, x2, y2, vx2, vy2, x3, y3, vx3, vy3, M, G)))
 
     x,y = euler_method(max_t, step, M, G, x1, y1, vx1, vy1, x2, y2, vx2, vy2, x3, y3, vx3, vy3)
+    print("Done")
     plot(x,y)
